@@ -46,6 +46,11 @@ export default function ChickenCoopApp() {
     return days;
   };
 
+  const getDayOfWeek = (day) => {
+    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    return date.toLocaleDateString('en-US', { weekday: 'short' });
+  }
+
   const daysArray = getDaysInMonth();
 
   const getAssignmentKey = (day, slotType) => {
@@ -116,9 +121,9 @@ export default function ChickenCoopApp() {
             </button>
           </div>
 
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-7 gap-2">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className="text-center font-semibold text-gray-600 py-2">
+              <div key={day} className="text-center font-semibold text-gray-600 py-2 hidden md:block">
                 {day}
               </div>
             ))}
@@ -126,12 +131,15 @@ export default function ChickenCoopApp() {
             {daysArray.map((day, index) => (
               <div 
                 key={index}
-                className="border rounded p-2 min-h-32 bg-gray-50"
+                className={`border rounded p-2 min-h-32 bg-gray-50 ${day ? '' : 'hidden md:block'}`}
               >
                 {day && (
                   <div>
-                    <div className="font-semibold text-gray-800 mb-2">{day}</div>
-                    
+                    <div className="flex items-center gap-1 mb-2 font-semibold text-gray-800">
+                      <span className="md:hidden">{getDayOfWeek(day)}</span>
+                      <span>{day}</span>
+                    </div>
+
                     <div className="text-xs mb-1">
                       <div className="font-medium text-gray-600">🌅 Day:</div>
                       <div 

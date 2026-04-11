@@ -1,11 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function ChickenCoopApp() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [assignments, setAssignments] = useState({});
+  const [assignments, setAssignments] = useState(() => {
+    const saved = localStorage.getItem('assignments');
+    return saved ? JSON.parse(saved) : {};
+  });
   const [showModal, setShowModal] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [inputName, setInputName] = useState('');
+  useEffect(() => {
+    localStorage.setItem('assignments', JSON.stringify(assignments));
+  }, [assignments]);
 
   const goToPreviousMonth = () => {
     const newDate = new Date(currentDate);

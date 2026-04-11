@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function ChickenCoopApp() {
+  const { t, i18n } = useTranslation();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [assignments, setAssignments] = useState(() => {
     const saved = localStorage.getItem('assignments');
@@ -25,7 +27,7 @@ export default function ChickenCoopApp() {
     setCurrentDate(newDate);
   };
 
-  const monthYear = currentDate.toLocaleDateString('en-US', { 
+  const monthYear = currentDate.toLocaleDateString(i18n.language, { 
     month: 'long', 
     year: 'numeric' 
   });
@@ -53,9 +55,21 @@ export default function ChickenCoopApp() {
   };
 
   const getDayOfWeek = (day) => {
+    // Returns day of week from numerical date
     const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    return date.toLocaleDateString('en-US', { weekday: 'short' });
+    return date.toLocaleDateString(i18n.language, { weekday: 'short' });
   }
+  const getDaysOfWeek = () => {
+    // Returns list of abbreviated days of week starting from Sunday in the current language 
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(2024, 0, i); // Jan 2024 starts on Monday, i=0 is Sunday
+        days.push(date.toLocaleDateString(i18n.language, { weekday: 'short' }));
+      }
+      return days;
+  };
+
+  const weekDays = getDaysOfWeek();
 
   const daysArray = getDaysInMonth();
 
@@ -105,7 +119,7 @@ export default function ChickenCoopApp() {
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-800 mb-6">
-          🐔 Chicken Coop Manager
+          🐔 {t('chicken_coop_manager')}
         </h1>
         
         <div className="bg-white rounded-lg shadow p-6">
@@ -114,7 +128,7 @@ export default function ChickenCoopApp() {
               onClick={goToPreviousMonth}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
-              ← Previous
+              ← {t('previous')}
             </button>
             <h2 className="text-2xl font-semibold">
               {monthYear}
@@ -123,12 +137,12 @@ export default function ChickenCoopApp() {
               onClick={goToNextMonth}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
-              Next →
+               {t('next')} →
             </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-7 gap-2">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+            {weekDays.map(day => (
               <div key={day} className="text-center font-semibold text-gray-600 py-2 hidden md:block">
                 {day}
               </div>
@@ -147,22 +161,22 @@ export default function ChickenCoopApp() {
                     </div>
 
                     <div className="text-xs mb-1">
-                      <div className="font-medium text-gray-600">🌅 Day:</div>
+                      <div className="font-medium text-gray-600">🌅  {t('day')}:</div>
                       <div 
                         onClick={() => handleSlotClick(day, 'day')}
                         className="bg-white border rounded px-2 py-1 text-gray-800 cursor-pointer hover:bg-blue-50"
                       >
-                        {getAssignment(day, 'day') || 'Empty'}
+                        {getAssignment(day, 'day') || t('empty')}
                       </div>
                     </div>
                     
                     <div className="text-xs">
-                      <div className="font-medium text-gray-600">🌙 Evening:</div>
+                      <div className="font-medium text-gray-600">🌙  {t('evening')}:</div>
                       <div 
                         onClick={() => handleSlotClick(day, 'evening')}
                         className="bg-white border rounded px-2 py-1 text-gray-800 cursor-pointer hover:bg-blue-50"
                       >
-                        {getAssignment(day, 'evening') || 'Empty'}
+                        {getAssignment(day, 'evening') || t('empty')}
                       </div>
                     </div>
                   </div>
@@ -176,10 +190,10 @@ export default function ChickenCoopApp() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
               <h3 className="text-lg font-semibold mb-4">
-                Assign Slot
+                {t('assign_slot')}
               </h3>
               <p className="text-sm text-gray-600 mb-4">
-                {selectedSlot && `${currentDate.toLocaleDateString('en-US', { month: 'long' })} ${selectedSlot.day} - ${selectedSlot.slotType === 'day' ? '🌅 Day' : '🌙 Evening'}`}
+                {selectedSlot && `${currentDate.toLocaleDateString(i18n.language, { month: 'long' })} ${selectedSlot.day} - ${selectedSlot.slotType === 'day' ? '🌅 Day' : '🌙 Evening'}`}
               </p>
               <input
                 type="text"
@@ -194,13 +208,13 @@ export default function ChickenCoopApp() {
                   onClick={handleCancel}
                   className="flex-1 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
                 <button
                   onClick={handleSave}
                   className="flex-1 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                 >
-                  Save
+                  {t('save')}
                 </button>
               </div>
             </div>

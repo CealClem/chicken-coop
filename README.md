@@ -1,3 +1,6 @@
+<img width="730" height="713" alt="Capture d’écran 2026-04-11 à 20 53 27" src="https://github.com/user-attachments/assets/cc8b9ab7-25b9-4802-b3d1-20f88a934453" />
+
+
 # 🐔 Chicken Coop Manager
 
 A web app (with mobile planned) to coordinate shared responsibilities for a community chicken coop.

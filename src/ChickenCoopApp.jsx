@@ -118,9 +118,16 @@ export default function ChickenCoopApp() {
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">
-          🐔 {t('chicken_coop_manager')}
-        </h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold text-gray-800">
+            🐔 {t('chicken_coop_manager')}
+          </h1>
+          <button onClick={() => i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr')}>
+            {i18n.language === 'fr' ? '🇬🇧 EN' : '🇫🇷 FR'}
+          </button>
+        </div>
+
+        
         
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-6">

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from backend.app.domain.models.assignment import Assignment
+from app.domain.models.assignment import Assignment
 
 class AbstractAssignmentRepository(ABC):
     @abstractmethod

@@ -1,7 +1,7 @@
 import datetime
 
-from backend.app.domain.models.assignment import Assignment
-from backend.app.domain.ports.assignment_repository import AbstractAssignmentRepository
+from app.domain.models.assignment import Assignment
+from app.domain.ports.assignment_repository import AbstractAssignmentRepository
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -22,8 +22,8 @@ class MongoAssignmentRepository(AbstractAssignmentRepository):
         return None
 
     async def get_assignments(self, month: int, year: int) -> list[Assignment]:
-        start = datetime.date(year, month, 1)
-        end = datetime.date(year, month + 1, 1) if month < 12 else datetime.date(year + 1, 1, 1)
+        start = datetime.datetime(year, month, 1)
+        end = datetime.datetime(year, month + 1, 1) if month != 12 else datetime.datetime(year + 1, 1, 1)
         assignments = await self.collection.find({"date": {"$gte": start, "$lt": end}}).to_list(length=None)
         return [Assignment(**assignment) for assignment in assignments]
 

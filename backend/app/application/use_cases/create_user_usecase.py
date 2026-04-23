@@ -1,5 +1,5 @@
-from backend.app.domain.models.user import User
-from backend.app.domain.ports.user_repository import AbstractUserRepository
+from app.domain.models.user import User
+from app.domain.ports.user_repository import AbstractUserRepository
 from passlib.context import CryptContext
 
 

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from backend.app.domain.models.user import User
+from app.domain.models.user import User
 
 class AbstractUserRepository(ABC):
     @abstractmethod

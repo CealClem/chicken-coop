@@ -1,5 +1,5 @@
-from backend.app.domain.models.assignment import Assignment
-from backend.app.domain.ports.assignment_repository import AbstractAssignmentRepository
+from app.domain.models.assignment import Assignment
+from app.domain.ports.assignment_repository import AbstractAssignmentRepository
 
 
 class UpdateAssignmentUseCase:

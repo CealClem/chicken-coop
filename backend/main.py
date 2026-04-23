@@ -1,16 +1,11 @@
 from fastapi import FastAPI
-from dotenv import load_dotenv
-import os
-from motor.motor_asyncio import AsyncIOMotorClient
-
-load_dotenv()
-
-mongodb_url = os.getenv("MONGODB_URL")
-
-client = AsyncIOMotorClient(mongodb_url)
-db = client.chickencoop
+from app.infrastructure.api import users, assignments
+from app.infrastructure.api.dependencies import db
 
 app = FastAPI()
+app.include_router(users.router, prefix="/api")
+app.include_router(assignments.router, prefix="/api")
+
 @app.get("/")
 def test():
     return {"status": "ok"}

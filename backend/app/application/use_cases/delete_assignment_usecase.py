@@ -1,4 +1,4 @@
-from backend.app.domain.ports.assignment_repository import AbstractAssignmentRepository
+from app.domain.ports.assignment_repository import AbstractAssignmentRepository
 
 
 class DeleteAssignmentUseCase:

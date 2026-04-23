@@ -11,7 +11,7 @@ class TimeOfDay(IntEnum):
 class Assignment(BaseModel):
     id: Optional[str] = Field(None, alias="_id")
     user_id: str
-    date: datetime.date
+    date: datetime.datetime
     time_of_day: TimeOfDay
 
     model_config = {"populate_by_name": True}

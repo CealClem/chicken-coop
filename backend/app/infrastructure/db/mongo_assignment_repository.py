@@ -11,13 +11,14 @@ class MongoAssignmentRepository(AbstractAssignmentRepository):
         self.collection = db.assignments
 
     async def create_assignment(self, assignment: Assignment) -> Assignment:
-        result = await self.collection.insert_one(assignment.model_dump())
+        result = await self.collection.insert_one(assignment.model_dump(exclude={"id"}))
         assignment.id = str(result.inserted_id)
         return assignment
 
     async def get_assignment_by_id(self, assignment_id: str) -> Assignment | None:
         assignment = await self.collection.find_one({"_id": assignment_id})
         if assignment:
+            assignment["_id"] = str(assignment["_id"])
             return Assignment(**assignment)
         return None
 
@@ -25,6 +26,8 @@ class MongoAssignmentRepository(AbstractAssignmentRepository):
         start = datetime.datetime(year, month, 1)
         end = datetime.datetime(year, month + 1, 1) if month != 12 else datetime.datetime(year + 1, 1, 1)
         assignments = await self.collection.find({"date": {"$gte": start, "$lt": end}}).to_list(length=None)
+        for assignment in assignments:
+            assignment["_id"] = str(assignment["_id"])
         return [Assignment(**assignment) for assignment in assignments]
 
     async def update_assignment(self, assignment_id: str, updated_fields: Assignment) -> Assignment:

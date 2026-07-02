@@ -1,19 +1,26 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
+const TIME_OF_DAY = { day: 0, evening: 1 };
+
 export default function ChickenCoopApp() {
   const { t, i18n } = useTranslation();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [assignments, setAssignments] = useState(() => {
-    const saved = localStorage.getItem('assignments');
-    return saved ? JSON.parse(saved) : {};
-  });
+  const [assignments, setAssignments] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [inputName, setInputName] = useState('');
+
+  const fetchAssignments = async () => {
+    const response = await fetch(`/api/assignments?month=${currentDate.getMonth() + 1}&year=${currentDate.getFullYear()}`);
+    const data = await response.json();
+    if (Array.isArray(data)) setAssignments(data);
+  };
+
   useEffect(() => {
-    localStorage.setItem('assignments', JSON.stringify(assignments));
-  }, [assignments]);
+    fetchAssignments();
+  }, [currentDate]);
+
 
   const goToPreviousMonth = () => {
     const newDate = new Date(currentDate);
@@ -80,9 +87,12 @@ export default function ChickenCoopApp() {
   };
 
   const getAssignment = (day, slotType) => {
-    const key = getAssignmentKey(day, slotType);
-    return assignments[key] || null;
-  };
+    return assignments.find(assignment => {
+        const assignmentDate = new Date(assignment.date);
+        return assignmentDate.getDate() === day &&
+               assignment.time_of_day === TIME_OF_DAY[slotType];
+      }) || null;
+};
 
   const handleSlotClick = (day, slotType) => {
     const currentAssignment = getAssignment(day, slotType);
@@ -91,21 +101,39 @@ export default function ChickenCoopApp() {
     setShowModal(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (selectedSlot) {
-      const key = getAssignmentKey(selectedSlot.day, selectedSlot.slotType);
-      const newAssignments = { ...assignments };
-      
-      if (inputName.trim() === '') {
-        delete newAssignments[key];
+      const existingAssignment = getAssignment(selectedSlot.day, selectedSlot.slotType);
+
+      if (inputName.trim() === '' && existingAssignment) {
+        await fetch(`/api/assignments/${existingAssignment.id}`, {
+          method: 'DELETE'
+        });
+      } else if (existingAssignment) {
+        await fetch(`/api/assignments/${existingAssignment.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ user_id: inputName, date: existingAssignment.date, time_of_day: TIME_OF_DAY[selectedSlot.slotType]})
+        });
       } else {
-        newAssignments[key] = inputName.trim();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(selectedSlot.day).padStart(2, '0');
+        const date = `${currentDate.getFullYear()}-${month}-${day}`;
+
+        await fetch('/api/assignments/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ user_id: inputName, date: date, time_of_day: TIME_OF_DAY[selectedSlot.slotType]})
+        });
       }
-      
-      setAssignments(newAssignments);
     }
     setShowModal(false);
     setInputName('');
+    await fetchAssignments(); // Refresh assignments after saving
     setSelectedSlot(null);
   };
 
@@ -173,7 +201,7 @@ export default function ChickenCoopApp() {
                         onClick={() => handleSlotClick(day, 'day')}
                         className="bg-white border rounded px-2 py-1 text-gray-800 cursor-pointer hover:bg-blue-50"
                       >
-                        {getAssignment(day, 'day') || t('empty')}
+                        {getAssignment(day, 'day')?.user_id || t('empty')}
                       </div>
                     </div>
                     
@@ -183,7 +211,7 @@ export default function ChickenCoopApp() {
                         onClick={() => handleSlotClick(day, 'evening')}
                         className="bg-white border rounded px-2 py-1 text-gray-800 cursor-pointer hover:bg-blue-50"
                       >
-                        {getAssignment(day, 'evening') || t('empty')}
+                        {getAssignment(day, 'evening')?.user_id || t('empty')}
                       </div>
                     </div>
                   </div>

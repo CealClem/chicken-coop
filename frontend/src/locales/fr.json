@@ -7,5 +7,6 @@
     "save": "Enregistrer",
     "cancel": "Annuler",
     "assign_slot": "Attribuer au créneau",
-    "empty": "Vide"
+    "empty": "Vide",
+    "enter_your_name": "Entrez votre nom"
 }

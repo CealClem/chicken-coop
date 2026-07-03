@@ -11,10 +11,21 @@ export default function ChickenCoopApp() {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [inputName, setInputName] = useState('');
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
   const fetchAssignments = async () => {
-    const response = await fetch(`/api/assignments?month=${currentDate.getMonth() + 1}&year=${currentDate.getFullYear()}`);
-    const data = await response.json();
-    if (Array.isArray(data)) setAssignments(data);
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/assignments?month=${currentDate.getMonth() + 1}&year=${currentDate.getFullYear()}`);
+      const data = await response.json();
+      if (Array.isArray(data)) setAssignments(data);
+    } catch (e) {
+      setError('Failed to fetch assignments');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -80,12 +91,6 @@ export default function ChickenCoopApp() {
 
   const daysArray = getDaysInMonth();
 
-  const getAssignmentKey = (day, slotType) => {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    return `${year}-${month}-${day}-${slotType}`;
-  };
-
   const getAssignment = (day, slotType) => {
     return assignments.find(assignment => {
         const assignmentDate = new Date(assignment.date);
@@ -97,44 +102,52 @@ export default function ChickenCoopApp() {
   const handleSlotClick = (day, slotType) => {
     const currentAssignment = getAssignment(day, slotType);
     setSelectedSlot({ day, slotType });
-    setInputName(currentAssignment || '');
+    setInputName(currentAssignment?.user_id || '');
     setShowModal(true);
   };
 
   const handleSave = async () => {
-    if (selectedSlot) {
-      const existingAssignment = getAssignment(selectedSlot.day, selectedSlot.slotType);
+    setIsLoading(true);
+    setError(null);
+    try {
+      if (selectedSlot) {
+        const existingAssignment = getAssignment(selectedSlot.day, selectedSlot.slotType);
 
-      if (inputName.trim() === '' && existingAssignment) {
-        await fetch(`/api/assignments/${existingAssignment.id}`, {
-          method: 'DELETE'
-        });
-      } else if (existingAssignment) {
-        await fetch(`/api/assignments/${existingAssignment.id}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ user_id: inputName, date: existingAssignment.date, time_of_day: TIME_OF_DAY[selectedSlot.slotType]})
-        });
-      } else {
-        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-        const day = String(selectedSlot.day).padStart(2, '0');
-        const date = `${currentDate.getFullYear()}-${month}-${day}`;
+        if (inputName.trim() === '' && existingAssignment) {
+          await fetch(`/api/assignments/${existingAssignment.id}`, {
+            method: 'DELETE'
+          });
+        } else if (existingAssignment) {
+          await fetch(`/api/assignments/${existingAssignment.id}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ user_id: inputName, date: existingAssignment.date, time_of_day: TIME_OF_DAY[selectedSlot.slotType]})
+          });
+        } else {
+          const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+          const day = String(selectedSlot.day).padStart(2, '0');
+          const date = `${currentDate.getFullYear()}-${month}-${day}`;
 
-        await fetch('/api/assignments/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ user_id: inputName, date: date, time_of_day: TIME_OF_DAY[selectedSlot.slotType]})
-        });
+          await fetch('/api/assignments/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ user_id: inputName, date: date, time_of_day: TIME_OF_DAY[selectedSlot.slotType]})
+          });
+        }
       }
+      setShowModal(false);
+      setInputName('');
+      await fetchAssignments(); // Refresh assignments after saving
+      setSelectedSlot(null);
+    } catch (e) {
+      setError('Failed to save assignment');
+    } finally {
+      setIsLoading(false);
     }
-    setShowModal(false);
-    setInputName('');
-    await fetchAssignments(); // Refresh assignments after saving
-    setSelectedSlot(null);
   };
 
   const handleCancel = () => {
@@ -176,6 +189,8 @@ export default function ChickenCoopApp() {
             </button>
           </div>
 
+          {isLoading && <div>Loading...</div>}
+          {error && <div>{error}</div>}
           <div className="grid grid-cols-1 md:grid-cols-7 gap-2">
             {weekDays.map(day => (
               <div key={day} className="text-center font-semibold text-gray-600 py-2 hidden md:block">
@@ -228,13 +243,13 @@ export default function ChickenCoopApp() {
                 {t('assign_slot')}
               </h3>
               <p className="text-sm text-gray-600 mb-4">
-                {selectedSlot && `${currentDate.toLocaleDateString(i18n.language, { month: 'long' })} ${selectedSlot.day} - ${selectedSlot.slotType === 'day' ? '🌅 Day' : '🌙 Evening'}`}
+                {selectedSlot && `${currentDate.toLocaleDateString(i18n.language, { month: 'long' })} ${selectedSlot.day} - ${selectedSlot.slotType === 'day' ? '🌅 ' + t('day') : '🌙 ' + t('evening')}`}
               </p>
               <input
                 type="text"
                 value={inputName}
                 onChange={(e) => setInputName(e.target.value)}
-                placeholder="Enter your name"
+                placeholder={t("enter_your_name")}
                 className="w-full border rounded px-3 py-2 mb-4"
                 autoFocus
               />
